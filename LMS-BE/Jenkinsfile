@@ -1,27 +1,43 @@
 pipeline {
     agent any
-    
 environment {
     DOCKERHUB_CREDENTIALS = credentials('dockerhub')
+     registry = "pranaysai19/backend-java"
+     registryCredential = 'dockeruser'
+     dockerImage = ''
 }
 stages {
-  
-    stage('creating the database container') {
+ stage('creating the database container') {
         steps {
-         sh 'cd lms-team-1/LMS-BE'
+            sh 'docker container rm --force lmsdb'
+            sh 'docker run -d -p 3307:3306 --network lmsnetwork -e MYSQL_ROOT_PASSWORD=Qwerty@123 --name lmsdb mysql'
         }
     }
-    stage('pushing the docker image to docker hub') {
+    stage('building the docker image') {
         steps {
-           
-            sh 'sudo docker build -t pranaysai19/backend .'
+            sh 'cd LMS-BE && docker build -t pranaysai19/backend-java .'
         }
     }
-  
-    stage('creating the docker backend container') {
+    stage('dockerhub login') {
         steps {
-        
-            sh 'sudo docker container run -d -p 8080:8080 --name backend pranaysai19/backend-lms'
+            sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
+        }
+    }
+    stage('pushing the docker image to dockerhub') {
+        steps {
+            sh 'docker push pranaysai19/backend-java'
+        }
+    }
+    stage('remove old docker image') {
+        steps {
+            sh 'docker rmi -f pranaysai19/backend-java'
+        }
+    }
+   
+    stage('creating the docker container-backend') {
+        steps {
+            sh 'docker container rm --force pranaysai19/backend-java'
+            sh 'docker container run -d -p 8080:8080 --network lmsnetwork -e DATABASE_URL=mysql://root:Qwerty@123@lmsdb:3306/mysql --name backend-lms -e PORT=8080 -e MODE=local pranaysai19/backend-java'
         }
     }
   }
