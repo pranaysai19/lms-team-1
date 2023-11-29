@@ -1,0 +1,28 @@
+pipeline {
+    agent any
+    
+environment {
+    DOCKERHUB_CREDENTIALS = credentials('dockerhub')
+}
+stages {
+  
+    stage('creating the database container') {
+        steps {
+         sh 'cd lms-team-1/LMS-BE'
+        }
+    }
+    stage('pushing the docker image to docker hub') {
+        steps {
+           
+            sh 'sudo docker build -t pranaysai19/backend .'
+        }
+    }
+  
+    stage('creating the docker backend container') {
+        steps {
+        
+            sh 'sudo docker container run -d -p 8080:8080 --name backend pranaysai19/backend-lms'
+        }
+    }
+  }
+}
