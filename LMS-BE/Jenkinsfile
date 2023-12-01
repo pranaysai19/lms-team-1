@@ -5,7 +5,12 @@ pipeline {
             steps {
                 sh 'cd LMS-BE && docker build -t backend .'
             }
-        }        
+        }   
+        stage('container remove') {
+            steps {
+                sh 'docker container rm -f be'
+            }
+        }
         stage('Docker container') {
             steps {
                 sh 'docker container run -dt --name be -p 9090:8080 backend'
