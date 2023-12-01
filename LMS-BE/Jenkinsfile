@@ -1,18 +1,6 @@
 pipeline {
     agent any
    stages {
-        stage('Checking docker network') {
-            steps {
-                script {
-                    if (networkExists == 0) {
-                        echo 'Docker network lmsnetwork already exists'
-                    } else {
-                        sh 'docker network create -d bridge lmsnetwork'
-                    }
-                }
-            }
-        }
-        
         stage('Checking database container') {
             steps {
                 script {
