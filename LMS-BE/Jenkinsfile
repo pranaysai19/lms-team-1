@@ -1,43 +1,55 @@
 pipeline {
     agent any
-environment {
-    DOCKERHUB_CREDENTIALS = credentials('dockerhub')
-     registry = "pranaysai19/backend-java"
-     registryCredential = 'dockeruser'
-     dockerImage = ''
-}
-stages {
- stage('creating the database container') {
-        steps {
-            sh 'docker container rm --force lmsdb'
-            sh 'docker run -d -p 3307:3306 --network lmsnetwork -e MYSQL_ROOT_PASSWORD=Qwerty@123 --name lmsdb mysql'
+   stages {
+        stage('Checking docker network') {
+            steps {
+                script {
+                    def networkExists = sh(script: 'docker network inspect lmsnetwork > /dev/null 2>&1', returnStatus: true)
+                    if (networkExists == 0) {
+                        echo 'Docker network lmsnetwork already exists'
+                    } else {
+                        sh 'docker network create -d bridge lmsnetwork'
+                    }
+                }
+            }
+        }
+        
+        stage('Checking database container') {
+            steps {
+                script {
+                    def containerExists = sh(script: 'docker inspect -f {{.State.Running}} mysql', returnStatus: true)
+                    if (containerExists == 0) {
+                        echo 'MySQL container already exists'
+                    } else {
+                        sh 'docker container run -d --name mysql --network lmsnetwork -e MYSQL_ROOT_PASSWORD=Password@123 -p 3306:3306 mysql:latest'
+                    }
+                }
+            }
+        }
+        
+        stage('Old container') {
+            steps {
+                script {
+                    def containerRunning = sh(script: 'docker inspect -f {{.State.Running}} be', returnStatus: true)
+                    if (containerRunning == 0) {
+                        sh 'docker container stop be' 
+                        sh 'docker container rm be' 
+                    }
+                    else {
+                        sh 'echo container not existing'
+                    }
+                }
+            }
+        }        
+        stage('Docker Build') {
+            steps {
+                sh 'cd LMS-BE && docker build -t backend .'
+            }
+        }        
+        stage('Docker container') {
+            steps {
+                sh 'docker container run -dt --name be --network lmsnetwork -p 8181:8080 backend'
+            }
         }
     }
-    stage('building the docker image') {
-        steps {
-            sh 'cd LMS-BE && docker build -t pranaysai19/backend-java .'
-        }
-    }
-    stage('dockerhub login') {
-        steps {
-            sh 'echo $DOCKERHUB_CREDENTIALS_PSW | docker login -u $DOCKERHUB_CREDENTIALS_USR --password-stdin'
-        }
-    }
-    stage('pushing the docker image to dockerhub') {
-        steps {
-            sh 'docker push pranaysai19/backend-java'
-        }
-    }
-    stage('remove old docker image') {
-        steps {
-            sh 'docker rmi -f pranaysai19/backend-java'
-        }
-    }
-    stage('creating the docker container-backend') {
-        steps {
-            sh 'docker container rm --force pranaysai19/backend-java'
-            sh 'docker container run -d -p 8080:8080 --network lmsnetwork -e DATABASE_URL=mysql://root:Qwerty@123@lmsdb:3306/mysql --name backend-lms -e PORT=8080 -e MODE=local pranaysai19/backend-java'
-        }
-    }
-  }
 }
