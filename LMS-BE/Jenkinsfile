@@ -1,19 +1,6 @@
 pipeline {
     agent any
    stages {
-        stage('Checking database container') {
-            steps {
-                script {
-                    def containerExists = sh(script: 'docker inspect -f {{.State.Running}} mysql', returnStatus: true)
-                    if (containerExists == 0) {
-                        echo 'Mysql container already exists'
-                    } else {
-                        sh 'docker container run -dt --name mysql --network lmsnetwork -e MYSQL_ROOT_PASSWORD=Password@123 -p 3307:3306 mysql:latest'
-                    }
-                }
-            }
-        }
-        
         stage('Docker Build') {
             steps {
                 sh 'cd LMS-BE && docker build -t backend .'
