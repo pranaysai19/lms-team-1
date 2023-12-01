@@ -14,7 +14,7 @@ pipeline {
             }
         }
         
-        stage('Old container') {
+        stage('Previous container') {
             steps {
                 script {
                     def containerRunning = sh(script: 'docker inspect -f {{.State.Running}} be', returnStatus: true)
