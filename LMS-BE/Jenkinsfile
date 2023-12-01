@@ -6,9 +6,9 @@ pipeline {
                 script {
                     def containerExists = sh(script: 'docker inspect -f {{.State.Running}} mysql', returnStatus: true)
                     if (containerExists == 0) {
-                        echo 'MySQL container already exists'
+                        echo 'Mysql container already exists'
                     } else {
-                        sh 'docker container run -d --name root --network lmsnetwork -e MYSQL_ROOT_PASSWORD=Password@123 -p 3307:3306 mysql:latest'
+                        sh 'docker container run -dt --name mysql --network lmsnetwork -e MYSQL_ROOT_PASSWORD=Password@123 -p 3307:3306 mysql:latest'
                     }
                 }
             }
