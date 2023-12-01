@@ -4,7 +4,6 @@ pipeline {
         stage('Checking docker network') {
             steps {
                 script {
-                    def networkExists = sh(script: 'docker network inspect lmsnetwork > /dev/null 2>&1', returnStatus: true)
                     if (networkExists == 0) {
                         echo 'Docker network lmsnetwork already exists'
                     } else {
