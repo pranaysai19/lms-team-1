@@ -14,20 +14,6 @@ pipeline {
             }
         }
         
-        stage('Previous container') {
-            steps {
-                script {
-                    def containerRunning = sh(script: 'docker inspect -f {{.State.Running}} be', returnStatus: true)
-                    if (containerRunning == 0) {
-                        sh 'docker container stop be' 
-                        sh 'docker container rm be' 
-                    }
-                    else {
-                        sh 'echo container not existing'
-                    }
-                }
-            }
-        }        
         stage('Docker Build') {
             steps {
                 sh 'cd LMS-BE && docker build -t backend .'
