@@ -1,5 +1,5 @@
 # Stage 1: Build the React application
-FROM node:20 as build
+FROM node:20 AS build
 # Set the working directory in the container
 WORKDIR /app
 # Copy package.json and package-lock.json to install dependencies
