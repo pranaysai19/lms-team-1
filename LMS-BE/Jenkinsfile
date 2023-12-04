@@ -1,17 +1,16 @@
 pipeline {
     agent any
-    stages {
-        stage('Container Build') {
-            steps {
-                sh 'docker container run -d --name mysql --network lmsnetwork -e MYSQL_ROOT_PASSWORD=Qwerty@123 -p 3307:3306 mysql:latest'
-            }
-        }   
    stages {
-        stage('Docker Build') {
+       stage('Docker db') {
+            steps {
+                sh 'docker container run -dt --name lmsdb -e MYSQL_ROOT_PASSWORD=Qwerty@123 -p 3306:3306 mysql:latest'
+            }
+        }
+       stage('Docker Build') {
             steps {
                 sh 'cd LMS-BE && docker build -t backend .'
             }
-        }   
+        }
         stage('container remove') {
             steps {
                 sh 'docker container rm -f be'
@@ -24,5 +23,3 @@ pipeline {
         }
     }
 }
-}  
-    
