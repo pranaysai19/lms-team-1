@@ -1,5 +1,11 @@
 pipeline {
     agent any
+    stages {
+        stage('Container Build') {
+            steps {
+                sh 'docker container run -d --name mysql --network lmsnetwork -e MYSQL_ROOT_PASSWORD=Qwerty@123 -p 3307:3306 mysql:latest'
+            }
+        }   
    stages {
         stage('Docker Build') {
             steps {
