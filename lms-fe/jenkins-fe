@@ -1,0 +1,21 @@
+pipeline {
+    agent any
+    stages {
+        stage ('Checkout') {
+            steps {
+                // Checkout the source code from your version control system (e.g., Git)
+                sh 'echo checkout SCM'
+            }
+        }
+        stage ('Docker Build') {
+            steps {
+                sh 'cd lms-fe && docker build -t frontend .'
+            }
+        }
+        stage ('container') {
+            steps {
+                sh 'docker run -dt --name fe -p 9090:80 frontend'
+            }
+        }
+    }
+}
